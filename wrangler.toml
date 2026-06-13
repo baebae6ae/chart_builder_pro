@@ -1,0 +1,14 @@
+# Cloudflare Pages configuration for Chart Builder Pro.
+#
+# The application is a fully client-side SPA: Excel parsing, chart rendering,
+# corporate-theme color extraction and PPTX generation all run in the browser.
+# That keeps Cloudflare compute (and therefore cost) at essentially zero — the
+# only thing served is static assets from the global edge.
+#
+# The `functions/` directory holds optional Pages Functions (Workers) for any
+# work that genuinely needs a server later (e.g. shared snapshot links, an
+# LLM-backed insight endpoint). None are required for the core flow.
+
+name = "chart-builder-pro"
+compatibility_date = "2024-11-01"
+pages_build_output_dir = "dist"
