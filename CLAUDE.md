@@ -60,7 +60,8 @@ components/ ← UI. 무엇이든 import 가능하지만, 로직은 lib/ 에, 상
 
 | 하고 싶은 것 | 두는 곳 | 패턴 |
 | --- | --- | --- |
-| 새 차트 종류(예: area) | `lib/chart/buildOption.ts` + `types`(`SeriesType`) | 옵션 생성 규칙만 수정, UI는 select 옵션 추가 |
+| 새 시각화 종류(예: 버블·히트맵·트리맵) | `lib/chart/registry.ts` 에 항목 1개 추가 → `render` 가 `echarts` 면 `buildOption.ts` 에 `case` 추가, `table`/`kpi` 류면 `lib/chart/<x>Model.ts`(순수) + `components/common/<X>View.tsx`(표시) | 레지스트리가 단일 카탈로그. `VizRenderer` 가 자동 분기 |
+| 새 차트 시리즈 표현(예: 점선) | `lib/chart/buildOption.ts` + `types`(`SeriesType`) | 옵션 생성 규칙만 수정, UI는 select 옵션 추가 |
 | 새 데이터 입력 형식(예: JSON) | `lib/excel/`(또는 `lib/import/`)에 파서 추가 | `SheetMatrix` 또는 `DataTable` 형태로 반환 |
 | 새 테마 추출 소스 | `lib/theme/extractColors.ts` 에 `extractFromX` 추가 + `extractTheme` 디스패치 | 동일한 `Theme` 반환 |
 | 새 내보내기 형식(예: PNG, XLSX) | `lib/export/` 에 새 모듈 | 화면과 같은 `buildOption`/데이터 재사용 |
@@ -111,6 +112,10 @@ export const useXStore = create<XState>((set) => ({ ... }));
 - ❌ 거대한 "만능 유틸" 파일을 만들지 않는다. 책임별로 폴더를 나눈다.
 - ❌ `any` 남발 금지. 외부 타입 한계는 좁은 범위에서 캐스팅하고 이유를 주석으로 남긴다
   (예: `lib/export/pptx.ts` 의 `AddCombo` 캐스팅).
+- ❌ **UI에 기술 자랑·개발 메모를 노출하지 않는다.** 화면은 *최종 사용자(데이터를 시각화해
+  PPT로 쓰려는 실무자)* 관점으로만 만든다. "서버 비용 0", "100% 브라우저 처리" 같은 내부
+  구현 자랑, TODO, 디버그 문구는 화면 밖(README·주석)에 둔다. 화면의 안내 문구는 "이걸 어떻게
+  쓰는가"에 직접 도움이 되는 것만 간결하게 남긴다.
 
 ---
 

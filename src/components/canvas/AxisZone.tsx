@@ -39,13 +39,14 @@ export default function AxisZone({ axis, label, table, chart }: AxisZoneProps) {
       {assigned.map(({ columnId, type }) => (
         <span key={columnId} className="chip">
           {columnName(table, columnId)}
-          {type && (
+          {type && chart.viz === 'combo' && (
             <select
               value={type}
               onChange={(e) => setSeriesType(columnId, e.target.value as SeriesType)}
             >
               <option value="bar">막대</option>
               <option value="line">꺾은선</option>
+              <option value="area">영역</option>
             </select>
           )}
           <button

@@ -9,11 +9,12 @@
 
 | # | 기능 | 구현 위치 |
 | --- | --- | --- |
-| ① | **스마트 파싱 + 실시간 편집기** — 헤더 행/영역을 직접 지정, 셀 수정 시 차트 즉시 재렌더링 | `lib/excel`, `components/import`, `components/editor/DataGrid` |
-| ② | **컬럼 블록 드래그 앤 드롭** — X / Y(좌) / Y(우) 축에 던지면 막대+꺾은선 혼합 차트 자동 구성 | `components/data/ColumnBlock`, `components/canvas/AxisZone` |
-| ③ | **사내 테마(CI) 동기화** — 로고 이미지 또는 PPT 템플릿에서 색상·폰트 추출 후 전역 적용 | `lib/theme/extractColors`, `store/themeStore` |
-| ④ | **시나리오 스냅샷 & A/B 분할 비교** — 현재 상태를 저장하고 두 시나리오를 나란히 비교 | `store/snapshotStore`, `components/editor/CompareBoard` |
-| ⑤ | **네이티브 PPTX 추출** — 이미지가 아닌 수정 가능한 PowerPoint 차트 객체로 다운로드 | `lib/export/pptx` |
+| ① | **스마트 파싱 + 실시간 편집기** — 헤더 행/영역을 직접 지정(행↔열 전환 포함), 셀 수정 시 즉시 재렌더링 | `lib/excel`, `components/import`, `components/editor/DataGrid` |
+| ② | **컬럼 블록 드래그 앤 드롭** — 분류/값 축에 던지면 시각화 자동 구성, 막대+꺾은선 혼합 지원 | `components/data/ColumnBlock`, `components/canvas/AxisZone` |
+| ③ | **다양한 시각화 선택** — 막대·꺾은선·영역·누적막대·원형·도넛·산점도·방사형 + **표** + **핵심지표(KPI) 카드** | `lib/chart/registry`, `lib/chart/*Model`, `components/canvas/VizPicker` |
+| ④ | **사내 테마(CI) 동기화** — 로고 이미지 또는 PPT 템플릿에서 색상·폰트 추출 후 전역 적용 | `lib/theme/extractColors`, `store/themeStore` |
+| ⑤ | **시나리오 스냅샷 & A/B 분할 비교** — 현재 상태를 저장하고 두 시나리오를 나란히 비교 | `store/snapshotStore`, `components/editor/CompareBoard` |
+| ⑥ | **네이티브 PPTX 추출** — 차트·표·KPI 모두 이미지가 아닌 수정 가능한 PowerPoint 객체로 다운로드 | `lib/export/pptx` |
 
 ---
 
@@ -111,7 +112,8 @@ npm run deploy     # wrangler pages deploy dist
 ### 빠른 체험
 
 1. `npm run dev` 실행 후 좌측 **"엑셀 / CSV 업로드"** 에서 `public/sample-data.csv` 선택
-2. 가져오기 창에서 헤더 행/영역 확인 후 **확인**
-3. 좌측 컬럼 블록(`매출`, `영업이익` 등)을 중앙 **Y축** 영역으로 드래그 → 차트 생성
-4. 하단 편집기에서 값 수정 → 차트 실시간 반영
-5. **PPT 다운로드** 로 수정 가능한 .pptx 추출
+2. 가져오기 창에서 헤더 행/영역 확인(필요 시 **행↔열 전환**) 후 **확인**
+3. 좌측 컬럼 블록(`월`)을 **분류**, (`매출`, `영업이익` 등)을 **값** 영역으로 드래그
+4. 상단 **시각화 갤러리**에서 막대·원형·표·KPI 카드 등 원하는 표현을 선택
+5. 하단 편집기에서 값 수정 → 실시간 반영
+6. **PPT 다운로드** 로 수정 가능한 .pptx 추출

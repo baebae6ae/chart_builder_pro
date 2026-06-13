@@ -35,8 +35,26 @@ export interface DataTable {
 /** The three drop targets on the canvas. */
 export type AxisKey = 'x' | 'yLeft' | 'yRight';
 
-/** Render style for a value series. */
-export type SeriesType = 'bar' | 'line';
+/** Render style for a value series within a combo chart. */
+export type SeriesType = 'bar' | 'line' | 'area';
+
+/** Aggregation applied when collapsing a value column to a single KPI number. */
+export type Aggregation = 'sum' | 'avg' | 'min' | 'max' | 'count' | 'last';
+
+/**
+ * The kind of visualization to produce from the current data binding. The same
+ * dimension/measure assignment can be shown as any applicable type, which is
+ * what lets one dataset yield charts, a table, or infographic cards.
+ */
+export type VizType =
+  | 'combo' // bar / line / area mixed per series (signature drag-to-axis chart)
+  | 'stackedBar'
+  | 'pie'
+  | 'donut'
+  | 'scatter'
+  | 'radar'
+  | 'table'
+  | 'kpi';
 
 /** One value series bound to a left/right Y axis. */
 export interface SeriesConfig {
@@ -45,11 +63,17 @@ export interface SeriesConfig {
   type: SeriesType;
 }
 
-/** Declarative description of the chart, decoupled from any rendering library. */
+/** Declarative description of the visualization, decoupled from any library. */
 export interface ChartConfig {
   title: string;
+  /** Selected visualization type from the gallery. */
+  viz: VizType;
+  /** Dimension / category column (the X / label axis). */
   xColumnId: string | null;
+  /** Measure columns (the values). */
   series: SeriesConfig[];
+  /** Aggregation used by the KPI-card visualization. */
+  agg: Aggregation;
 }
 
 /** Corporate theme extracted from a logo or PPT template. */

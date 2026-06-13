@@ -58,6 +58,23 @@ export async function readWorkbook(file: File): Promise<SheetMatrix[]> {
   });
 }
 
+/**
+ * Transpose a sheet matrix (swap rows and columns). Handy when a dataset is
+ * laid out "wide" — series running across a row rather than down a column —
+ * so the same header/region tools apply to either orientation.
+ */
+export function transposeMatrix(matrix: SheetMatrix): SheetMatrix {
+  const rows = matrix.cells.length;
+  const cols = matrix.cells[0]?.length ?? 0;
+  const cells: CellValue[][] = [];
+  for (let c = 0; c < cols; c += 1) {
+    const row: CellValue[] = [];
+    for (let r = 0; r < rows; r += 1) row.push(matrix.cells[r][c] ?? null);
+    cells.push(row);
+  }
+  return { sheetName: matrix.sheetName, cells };
+}
+
 /** A region covering the whole matrix — the default selection. */
 export function fullRegion(matrix: SheetMatrix): Region {
   const rows = matrix.cells.length;

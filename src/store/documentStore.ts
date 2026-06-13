@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CellValue, ChartConfig, DataTable, SeriesType } from '@/types';
+import type { Aggregation, CellValue, ChartConfig, DataTable, SeriesType, VizType } from '@/types';
 import { inferColumnType, isNumeric } from '@/lib/util/infer';
 
 /**
@@ -10,7 +10,13 @@ import { inferColumnType, isNumeric } from '@/lib/util/infer';
  * directly, which keeps data flow one-directional and easy to follow.
  */
 
-const emptyChart: ChartConfig = { title: '', xColumnId: null, series: [] };
+const emptyChart: ChartConfig = {
+  title: '',
+  viz: 'combo',
+  xColumnId: null,
+  series: [],
+  agg: 'sum',
+};
 
 interface DocumentState {
   table: DataTable | null;
@@ -29,6 +35,10 @@ interface DocumentState {
   deleteRow: (rowIndex: number) => void;
 
   setTitle: (title: string) => void;
+  /** Choose the visualization type from the gallery. */
+  setViz: (viz: VizType) => void;
+  /** Set the aggregation used by the KPI-card visualization. */
+  setAgg: (agg: Aggregation) => void;
   /** Assign a column to an axis drop zone. */
   assignAxis: (columnId: string, axis: 'x' | 'yLeft' | 'yRight') => void;
   removeSeries: (columnId: string) => void;
@@ -86,6 +96,8 @@ export const useDocumentStore = create<DocumentState>((set) => ({
     }),
 
   setTitle: (title) => set((state) => ({ chart: { ...state.chart, title } })),
+  setViz: (viz) => set((state) => ({ chart: { ...state.chart, viz } })),
+  setAgg: (agg) => set((state) => ({ chart: { ...state.chart, agg } })),
 
   assignAxis: (columnId, axis) =>
     set((state) => {

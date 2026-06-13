@@ -23,17 +23,23 @@ export default function ImportWizard() {
   const activeSheet = useImportStore((s) => s.activeSheet);
   const headerRow = useImportStore((s) => s.headerRow);
   const region = useImportStore((s) => s.region);
+  const transpose = useImportStore((s) => s.transpose);
   const status = useImportStore((s) => s.status);
 
   const selectSheet = useImportStore((s) => s.selectSheet);
   const setHeaderRow = useImportStore((s) => s.setHeaderRow);
   const setRegion = useImportStore((s) => s.setRegion);
+  const toggleTranspose = useImportStore((s) => s.toggleTranspose);
+  const effectiveMatrix = useImportStore((s) => s.effectiveMatrix);
   const cancel = useImportStore((s) => s.cancel);
   const confirm = useImportStore((s) => s.confirm);
 
   if (!open) return null;
 
-  const sheet = sheets[activeSheet];
+  // Preview reflects the chosen orientation; `transpose` is read above so this
+  // recomputes whenever the user flips it.
+  void transpose;
+  const sheet = effectiveMatrix();
   const rowCount = Math.min(sheet?.cells.length ?? 0, MAX_PREVIEW_ROWS);
   const colCount = Math.min(sheet?.cells[0]?.length ?? 0, MAX_PREVIEW_COLS);
 
@@ -98,6 +104,17 @@ export default function ImportWizard() {
                       : '-'}
                   </span>
                 </div>
+                <label className="field">
+                  방향
+                  <button
+                    type="button"
+                    className={transpose ? 'btn--primary' : undefined}
+                    title="행/열을 바꿔 읽습니다 (항목이 가로로 나열된 데이터에 유용)"
+                    onClick={toggleTranspose}
+                  >
+                    행↔열 전환{transpose ? ' (켜짐)' : ''}
+                  </button>
+                </label>
               </div>
 
               <div style={{ overflow: 'auto', maxHeight: '50vh' }}>

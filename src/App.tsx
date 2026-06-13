@@ -34,10 +34,9 @@ export default function App() {
         <header className="app__header">
           <div className="app__brand">
             Chart Builder Pro
-            <span>드래그 한 번으로 데이터 → 수정 가능한 PPT</span>
+            <span>데이터를 올리고, 원하는 시각화를 골라, PPT로 내보내기</span>
           </div>
           <div className="app__header-spacer" />
-          <span className="tag">100% 브라우저 처리 · 서버 비용 0</span>
         </header>
 
         <div className="app__body">
