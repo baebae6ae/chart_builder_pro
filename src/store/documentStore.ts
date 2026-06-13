@@ -1,13 +1,14 @@
 import { create } from 'zustand';
-import type { Aggregation, CellValue, ChartConfig, DataTable, SeriesType, VizType } from '@/types';
+import type { CellValue, ChartConfig, DataTable, MeasureAgg, SeriesType, VizType } from '@/types';
 import { inferColumnType, isNumeric } from '@/lib/util/infer';
+import { suggestCharts, type Suggestion } from '@/lib/analyze/suggest';
 
 /**
- * The live working document: the current dataset plus the chart bound to it.
+ * The live working document: the current dataset, the visualization bound to
+ * it, and the auto-generated suggestions for that dataset.
  *
  * This is the only place the active table/chart is mutated. Components read
- * slices via selectors and call actions; they never reach in and rewrite state
- * directly, which keeps data flow one-directional and easy to follow.
+ * slices via selectors and call actions; they never rewrite state directly.
  */
 
 const emptyChart: ChartConfig = {
@@ -15,17 +16,21 @@ const emptyChart: ChartConfig = {
   viz: 'combo',
   xColumnId: null,
   series: [],
-  agg: 'sum',
+  aggregate: true,
 };
 
 interface DocumentState {
   table: DataTable | null;
   chart: ChartConfig;
+  /** Visualizations auto-suggested for the current table. */
+  suggestions: Suggestion[];
 
-  /** Replace the dataset (e.g. after the import wizard) and reset the chart. */
+  /** Replace the dataset (e.g. after the import wizard) and re-profile it. */
   setTable: (table: DataTable) => void;
   /** Load a snapshot's table + chart as the new working document. */
   loadDocument: (table: DataTable, chart: ChartConfig) => void;
+  /** Apply an auto-suggested visualization to the current table. */
+  applySuggestion: (chart: ChartConfig) => void;
   clear: () => void;
 
   /** Edit a single grid cell; numeric columns coerce to numbers. */
@@ -35,14 +40,13 @@ interface DocumentState {
   deleteRow: (rowIndex: number) => void;
 
   setTitle: (title: string) => void;
-  /** Choose the visualization type from the gallery. */
   setViz: (viz: VizType) => void;
-  /** Set the aggregation used by the KPI-card visualization. */
-  setAgg: (agg: Aggregation) => void;
+  setAggregate: (on: boolean) => void;
   /** Assign a column to an axis drop zone. */
   assignAxis: (columnId: string, axis: 'x' | 'yLeft' | 'yRight') => void;
   removeSeries: (columnId: string) => void;
   setSeriesType: (columnId: string, type: SeriesType) => void;
+  setMeasureAgg: (columnId: string, agg: MeasureAgg) => void;
 }
 
 const recomputeType = (table: DataTable, colIndex: number): DataTable => {
@@ -57,10 +61,14 @@ const recomputeType = (table: DataTable, colIndex: number): DataTable => {
 export const useDocumentStore = create<DocumentState>((set) => ({
   table: null,
   chart: emptyChart,
+  suggestions: [],
 
-  setTable: (table) => set({ table, chart: emptyChart }),
-  loadDocument: (table, chart) => set({ table, chart }),
-  clear: () => set({ table: null, chart: emptyChart }),
+  setTable: (table) =>
+    set({ table, chart: emptyChart, suggestions: suggestCharts(table) }),
+  loadDocument: (table, chart) =>
+    set({ table, chart, suggestions: suggestCharts(table) }),
+  applySuggestion: (chart) => set({ chart }),
+  clear: () => set({ table: null, chart: emptyChart, suggestions: [] }),
 
   updateCell: (rowIndex, colIndex, raw) =>
     set((state) => {
@@ -97,12 +105,11 @@ export const useDocumentStore = create<DocumentState>((set) => ({
 
   setTitle: (title) => set((state) => ({ chart: { ...state.chart, title } })),
   setViz: (viz) => set((state) => ({ chart: { ...state.chart, viz } })),
-  setAgg: (agg) => set((state) => ({ chart: { ...state.chart, agg } })),
+  setAggregate: (on) => set((state) => ({ chart: { ...state.chart, aggregate: on } })),
 
   assignAxis: (columnId, axis) =>
     set((state) => {
       if (axis === 'x') {
-        // X holds one column and never doubles as a value series.
         return {
           chart: {
             ...state.chart,
@@ -112,9 +119,12 @@ export const useDocumentStore = create<DocumentState>((set) => ({
         };
       }
       const series = state.chart.series.filter((s) => s.columnId !== columnId);
+      const column = state.table?.columns.find((c) => c.id === columnId);
+      // Numeric columns sum; non-numeric columns can only be counted.
+      const agg: MeasureAgg = column?.type === 'number' ? 'sum' : 'count';
       // First series defaults to bars, the rest to lines — a sensible combo.
       const type: SeriesType = series.length === 0 ? 'bar' : 'line';
-      series.push({ columnId, axis, type });
+      series.push({ columnId, axis, type, agg });
       const xColumnId = state.chart.xColumnId === columnId ? null : state.chart.xColumnId;
       return { chart: { ...state.chart, xColumnId, series } };
     }),
@@ -134,6 +144,16 @@ export const useDocumentStore = create<DocumentState>((set) => ({
         ...state.chart,
         series: state.chart.series.map((s) =>
           s.columnId === columnId ? { ...s, type } : s,
+        ),
+      },
+    })),
+
+  setMeasureAgg: (columnId, agg) =>
+    set((state) => ({
+      chart: {
+        ...state.chart,
+        series: state.chart.series.map((s) =>
+          s.columnId === columnId ? { ...s, agg } : s,
         ),
       },
     })),

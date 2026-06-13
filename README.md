@@ -9,6 +9,7 @@
 
 | # | 기능 | 구현 위치 |
 | --- | --- | --- |
+| ⓪ | **자동 분석 & 추천 시각화** — 업로드 즉시 열 역할을 분석(숫자/날짜/범주/텍스트)해 바로 쓸 수 있는 차트들을 자동 제안. 숫자가 없는 **순수 범주형 데이터도 빈도(COUNT) 집계**로 시각화 | `lib/analyze`, `lib/chart/plotData`, `components/canvas/SuggestionGallery` |
 | ① | **스마트 파싱 + 실시간 편집기** — 헤더 행/영역을 직접 지정(행↔열 전환 포함), 셀 수정 시 즉시 재렌더링 | `lib/excel`, `components/import`, `components/editor/DataGrid` |
 | ② | **컬럼 블록 드래그 앤 드롭** — 분류/값 축에 던지면 시각화 자동 구성, 막대+꺾은선 혼합 지원 | `components/data/ColumnBlock`, `components/canvas/AxisZone` |
 | ③ | **다양한 시각화 선택** — 막대·꺾은선·영역·누적막대·원형·도넛·산점도·방사형 + **표** + **핵심지표(KPI) 카드** | `lib/chart/registry`, `lib/chart/*Model`, `components/canvas/VizPicker` |

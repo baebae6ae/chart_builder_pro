@@ -41,9 +41,10 @@ components/ ← UI. 무엇이든 import 가능하지만, 로직은 lib/ 에, 상
 | 경로 | 책임 | 넣는 것 / 넣지 않는 것 |
 | --- | --- | --- |
 | `src/types/` | 도메인 모델(단일 진실 공급원) | ✅ 타입/인터페이스만. ❌ 함수·React |
-| `src/lib/util/` | 범용 순수 헬퍼 | `id`, 타입추론(`infer`) 등. ❌ 도메인 특화 로직 |
+| `src/lib/util/` | 범용 순수 헬퍼 | `id`, 타입추론·공백판정(`infer`), 숫자포맷(`format`). ❌ 도메인 특화 로직 |
 | `src/lib/excel/` | 엑셀 입력 (파싱·구조화) | SheetJS 사용은 **여기서만** |
-| `src/lib/chart/` | 차트 옵션 생성 규칙 | ECharts 옵션 빌드는 **여기서만** |
+| `src/lib/analyze/` | 데이터 프로파일링·추천 | 열 역할 분류(`profile`), 자동 추천 차트(`suggest`) |
+| `src/lib/chart/` | 집계·차트 옵션 생성 | **집계는 `plotData.ts` 한 곳**(group-by·COUNT). ECharts 옵션은 `buildOption.ts` |
 | `src/lib/theme/` | 테마(색상·폰트) 추출 | canvas/JSZip 추출은 **여기서만** |
 | `src/lib/export/` | PPTX 생성 | pptxgenjs 사용은 **여기서만** |
 | `src/store/` | 앱 상태 + 액션 | 도메인별 store 1개. 상태 변경은 **여기서만** |
@@ -62,6 +63,8 @@ components/ ← UI. 무엇이든 import 가능하지만, 로직은 lib/ 에, 상
 | --- | --- | --- |
 | 새 시각화 종류(예: 버블·히트맵·트리맵) | `lib/chart/registry.ts` 에 항목 1개 추가 → `render` 가 `echarts` 면 `buildOption.ts` 에 `case` 추가, `table`/`kpi` 류면 `lib/chart/<x>Model.ts`(순수) + `components/common/<X>View.tsx`(표시) | 레지스트리가 단일 카탈로그. `VizRenderer` 가 자동 분기 |
 | 새 차트 시리즈 표현(예: 점선) | `lib/chart/buildOption.ts` + `types`(`SeriesType`) | 옵션 생성 규칙만 수정, UI는 select 옵션 추가 |
+| 새 집계 방식(예: 중앙값) | `types`(`MeasureAgg`) + `lib/chart/plotData.ts`의 `reduce` + `kpiModel.ts`의 `reduceAll` | 모든 렌더러가 `buildPlotData` 결과를 소비하므로 한 곳만 고치면 전파됨 |
+| 새 자동 추천 규칙 | `lib/analyze/suggest.ts` 에 규칙 추가 (`profile` 역할 기반) | `ChartConfig` 하나를 만들어 push. UI/렌더 변경 불필요 |
 | 새 데이터 입력 형식(예: JSON) | `lib/excel/`(또는 `lib/import/`)에 파서 추가 | `SheetMatrix` 또는 `DataTable` 형태로 반환 |
 | 새 테마 추출 소스 | `lib/theme/extractColors.ts` 에 `extractFromX` 추가 + `extractTheme` 디스패치 | 동일한 `Theme` 반환 |
 | 새 내보내기 형식(예: PNG, XLSX) | `lib/export/` 에 새 모듈 | 화면과 같은 `buildOption`/데이터 재사용 |
@@ -112,6 +115,10 @@ export const useXStore = create<XState>((set) => ({ ... }));
 - ❌ 거대한 "만능 유틸" 파일을 만들지 않는다. 책임별로 폴더를 나눈다.
 - ❌ `any` 남발 금지. 외부 타입 한계는 좁은 범위에서 캐스팅하고 이유를 주석으로 남긴다
   (예: `lib/export/pptx.ts` 의 `AddCombo` 캐스팅).
+- ❌ **"올바른 표 형태"를 가정하지 않는다.** 사용자는 숫자가 전혀 없는 범주형, 다중 헤더,
+  빈/플레이스홀더(`-`) 섞인 파일 등 *무엇이든* 올린다. 새 기능은 `lib/analyze/profile`로 열
+  역할을 먼저 판단하고, 숫자가 없으면 **COUNT 집계**로라도 시각화가 나오게 한다. 특정 컬럼
+  순서/이름/숫자 존재를 전제로 코드를 짜지 않는다.
 - ❌ **UI에 기술 자랑·개발 메모를 노출하지 않는다.** 화면은 *최종 사용자(데이터를 시각화해
   PPT로 쓰려는 실무자)* 관점으로만 만든다. "서버 비용 0", "100% 브라우저 처리" 같은 내부
   구현 자랑, TODO, 디버그 문구는 화면 밖(README·주석)에 둔다. 화면의 안내 문구는 "이걸 어떻게

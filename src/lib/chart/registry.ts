@@ -1,4 +1,5 @@
 import type { ChartConfig, VizType } from '@/types';
+import { measureCount } from '@/lib/chart/plotData';
 
 /**
  * Visualization registry — the single catalogue of every output type the app
@@ -39,7 +40,8 @@ export const vizMeta = (id: VizType): VizMeta =>
 /** Whether the current dimension/measure binding satisfies a viz type. */
 export function isVizApplicable(id: VizType, chart: ChartConfig): boolean {
   const meta = vizMeta(id);
-  if (chart.series.length < meta.minMeasures) return false;
+  // Count synthesized COUNT measures too, so one categorical column is enough.
+  if (measureCount(chart) < meta.minMeasures) return false;
   if (meta.needsDimension && !chart.xColumnId) return false;
   return true;
 }

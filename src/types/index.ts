@@ -38,8 +38,12 @@ export type AxisKey = 'x' | 'yLeft' | 'yRight';
 /** Render style for a value series within a combo chart. */
 export type SeriesType = 'bar' | 'line' | 'area';
 
-/** Aggregation applied when collapsing a value column to a single KPI number. */
-export type Aggregation = 'sum' | 'avg' | 'min' | 'max' | 'count' | 'last';
+/**
+ * How a measure column is reduced within a dimension group (or overall).
+ * `count` ignores the column and counts rows — the key to charting purely
+ * categorical data where there are no numbers to sum.
+ */
+export type MeasureAgg = 'count' | 'sum' | 'avg' | 'min' | 'max';
 
 /**
  * The kind of visualization to produce from the current data binding. The same
@@ -56,11 +60,15 @@ export type VizType =
   | 'table'
   | 'kpi';
 
-/** One value series bound to a left/right Y axis. */
+/**
+ * One measure (value) of the chart. `columnId` is null for a pure row COUNT.
+ * `agg` decides how the column collapses within each dimension group.
+ */
 export interface SeriesConfig {
-  columnId: string;
+  columnId: string | null;
   axis: 'yLeft' | 'yRight';
   type: SeriesType;
+  agg: MeasureAgg;
 }
 
 /** Declarative description of the visualization, decoupled from any library. */
@@ -68,12 +76,12 @@ export interface ChartConfig {
   title: string;
   /** Selected visualization type from the gallery. */
   viz: VizType;
-  /** Dimension / category column (the X / label axis). */
+  /** Dimension / category column to group by (the X / label axis). */
   xColumnId: string | null;
   /** Measure columns (the values). */
   series: SeriesConfig[];
-  /** Aggregation used by the KPI-card visualization. */
-  agg: Aggregation;
+  /** When true, rows are grouped by the dimension and measures aggregated. */
+  aggregate: boolean;
 }
 
 /** Corporate theme extracted from a logo or PPT template. */

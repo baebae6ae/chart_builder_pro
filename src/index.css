@@ -710,3 +710,115 @@ select:focus {
   font-size: 11px;
   color: var(--text-muted);
 }
+
+/* ---- Canvas tabs / controls -------------------------------------------- */
+.canvas-tabs {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+.canvas-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: none;
+}
+.canvas-controls .viz-picker {
+  flex: 1;
+}
+.agg-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.agg-toggle input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--accent);
+}
+
+/* ---- Suggestion gallery ------------------------------------------------ */
+.suggest-grid {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  padding: 2px;
+  align-content: start;
+}
+.suggest-card {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+.suggest-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 18px rgba(37, 99, 235, 0.16);
+  transform: translateY(-2px);
+}
+.suggest-card__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px 6px;
+}
+.suggest-card__title {
+  font-weight: 700;
+  font-size: 14px;
+}
+.suggest-card__reason {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.suggest-card__preview {
+  height: 190px;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+}
+.suggest-card__cta {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+/* Compact the shared views when shown inside a small preview card. */
+.suggest-card__preview .chart-host {
+  min-height: 0;
+}
+.suggest-card__preview .kpi-grid {
+  padding: 10px;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+}
+.suggest-card__preview .kpi-card {
+  padding: 10px 12px;
+}
+.suggest-card__preview .kpi-card__value {
+  font-size: 20px;
+}
+.suggest-card__preview .report {
+  font-size: 11px;
+}
+.suggest-card__preview .empty {
+  padding: 12px;
+  font-size: 12px;
+}

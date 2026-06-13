@@ -10,6 +10,16 @@ import type { CellValue, ColumnType } from '@/types';
 
 const DATE_RE = /^\d{4}[-/.]\d{1,2}([-/.]\d{1,2})?$/;
 
+/** Values that should be treated as "empty" for grouping/counting purposes. */
+const BLANKISH = new Set(['', '-', '—', '–', 'n/a', 'na', 'null', 'none', '.']);
+
+/** True when a cell carries no real information (null, empty, or a placeholder). */
+export function isBlank(value: CellValue): boolean {
+  if (value === null) return true;
+  if (typeof value === 'string') return BLANKISH.has(value.trim().toLowerCase());
+  return false;
+}
+
 /** True when a value can be treated as a finite number. */
 export function isNumeric(value: CellValue): boolean {
   if (value === null || value === '') return false;
