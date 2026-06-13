@@ -1,0 +1,54 @@
+name: Deploy to GitHub Pages
+
+# Builds the static app and publishes it to GitHub Pages on every push to the
+# default branch. The app is 100% client-side, so this is a pure static deploy
+# (no server, no cost).
+on:
+  push:
+    branches: ['claude/serene-keller-liurb2']
+  workflow_dispatch: {}
+
+# Permissions required by the official Pages deployment actions.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment; newer runs cancel in-progress ones.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          # GitHub Pages serves project sites under /<repo>/, so assets must be
+          # prefixed accordingly. Vite reads this via vite.config.ts.
+          BASE_PATH: /chart_builder_pro/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

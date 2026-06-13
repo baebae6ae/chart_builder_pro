@@ -4,6 +4,10 @@ import { fileURLToPath, URL } from 'node:url';
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Asset base path. Cloudflare Pages (and local) serve from root ('/'), while
+  // GitHub Pages serves from a repo subpath; the deploy workflow injects
+  // BASE_PATH=/chart_builder_pro/ so both targets work from one config.
+  base: process.env.BASE_PATH || '/',
   plugins: [react()],
   resolve: {
     alias: {
