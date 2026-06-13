@@ -97,6 +97,17 @@ npm run deploy     # wrangler pages deploy dist
 # 또는 Cloudflare 대시보드에서 빌드 명령 `npm run build`, 출력 디렉터리 `dist` 로 연결
 ```
 
+### GitHub Pages 배포 (자동)
+
+`.github/workflows/deploy.yml` 가 기본 브랜치에 push 될 때마다 자동으로 빌드→배포합니다.
+**최초 1회만** 저장소 설정을 켜주면 됩니다(이후엔 자동):
+
+1. GitHub 저장소 → **Settings → Pages**
+2. **Build and deployment → Source** 를 **"GitHub Actions"** 로 선택
+3. **Actions** 탭에서 최신 "Deploy to GitHub Pages" 실행을 **Re-run** (또는 아무 커밋 push)
+
+배포 주소: **https://baebae6ae.github.io/chart_builder_pro/**
+
 ### 빠른 체험
 
 1. `npm run dev` 실행 후 좌측 **"엑셀 / CSV 업로드"** 에서 `public/sample-data.csv` 선택
