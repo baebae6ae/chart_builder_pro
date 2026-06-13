@@ -30,6 +30,13 @@ jobs:
           node-version: 20
           cache: npm
 
+      # Turns on GitHub Pages for the repo automatically (no manual Settings
+      # toggle needed) using the workflow's pages:write permission.
+      - name: Enable GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
       - run: npm ci
 
       - name: Build
