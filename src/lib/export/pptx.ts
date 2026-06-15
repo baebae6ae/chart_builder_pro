@@ -185,22 +185,51 @@ function addComboChart(
   const labels = plot.categories;
   const usesRight = plot.series.some((s) => s.axis === 'yRight');
 
-  const chartType = (type: PlotData['series'][number]['type']) => {
-    if (stacked || type === 'bar') return pptx.ChartType.bar;
-    if (type === 'area') return pptx.ChartType.area;
-    return pptx.ChartType.line;
+  const kindOf = (type: PlotData['series'][number]['type']): 'bar' | 'area' | 'line' => {
+    if (stacked || type === 'bar') return 'bar';
+    if (type === 'area') return 'area';
+    return 'line';
   };
 
-  const multi: PptxGenJS.IChartMulti[] = plot.series.map((s, i) => ({
-    type: chartType(s.type),
-    data: [{ name: s.name, labels, values: s.values.map((v) => v ?? 0) }],
-    options: {
-      chartColors: [colorAt(palette, i)],
-      barGrouping: stacked ? 'stacked' : undefined,
-      secondaryValAxis: usesRight && s.axis === 'yRight',
-      secondaryCatAxis: usesRight && s.axis === 'yRight',
-    },
-  }));
+  // PowerPoint only clusters/stacks bar series that live in a SINGLE barChart
+  // element. Emitting one entry per bar series (as we used to) makes PPT draw
+  // several overlapping barCharts at the same category position — the "weird
+  // shape" bug. So merge all bar series sharing an axis into one entry; lines
+  // and areas overlay fine as individual entries.
+  const multi: PptxGenJS.IChartMulti[] = [];
+
+  (['yLeft', 'yRight'] as const).forEach((axis) => {
+    const bars = plot.series
+      .map((s, i) => ({ s, i }))
+      .filter(({ s }) => kindOf(s.type) === 'bar' && s.axis === axis);
+    if (bars.length === 0) return;
+    const onRight = axis === 'yRight' && usesRight;
+    multi.push({
+      type: pptx.ChartType.bar,
+      data: bars.map(({ s }) => ({ name: s.name, labels, values: s.values.map((v) => v ?? 0) })),
+      options: {
+        chartColors: bars.map(({ i }) => colorAt(palette, i)),
+        barGrouping: stacked ? 'stacked' : 'clustered',
+        secondaryValAxis: onRight,
+        secondaryCatAxis: onRight,
+      },
+    });
+  });
+
+  plot.series.forEach((s, i) => {
+    const kind = kindOf(s.type);
+    if (kind === 'bar') return;
+    const onRight = usesRight && s.axis === 'yRight';
+    multi.push({
+      type: kind === 'area' ? pptx.ChartType.area : pptx.ChartType.line,
+      data: [{ name: s.name, labels, values: s.values.map((v) => v ?? 0) }],
+      options: {
+        chartColors: [colorAt(palette, i)],
+        secondaryValAxis: onRight,
+        secondaryCatAxis: onRight,
+      },
+    });
+  });
 
   const placeholder: PptxGenJS.IChartMulti[] =
     multi.length > 0
@@ -209,7 +238,7 @@ function addComboChart(
 
   const options: PptxGenJS.IChartOpts = {
     ...common,
-    barGrouping: stacked ? 'stacked' : undefined,
+    barGrouping: stacked ? 'stacked' : 'clustered',
     valAxes: usesRight ? [{ showValAxisTitle: false }, { showValAxisTitle: false }] : undefined,
     catAxes: usesRight ? [{ catAxisHidden: false }, { catAxisHidden: true }] : undefined,
   };
