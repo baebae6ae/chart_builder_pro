@@ -9,7 +9,7 @@
 
 | # | 기능 | 구현 위치 |
 | --- | --- | --- |
-| ⓪ | **자동 분석 & 추천 시각화** — 업로드 즉시 열 역할을 분석(숫자/날짜/범주/텍스트)해 바로 쓸 수 있는 차트들을 자동 제안. 숫자가 없는 **순수 범주형 데이터도 빈도(COUNT) 집계**로 시각화 | `lib/analyze`, `lib/chart/plotData`, `components/canvas/SuggestionGallery` |
+| ⓪ | **자동 인사이트 생성 → 비교 → 선택 내보내기** — 업로드 즉시 열 역할을 분석(숫자/날짜/범주/텍스트)해, 분포·교차통합(여러 열을 묶은 분포)·추세·상관·구성비·KPI·순위 등 **인사이트가 담긴 시각화 여러 개**를 캡션과 함께 자동 생성. 마음에 드는 것을 골라 나란히 비교하고 **선택 항목을 한 번에 PPTX 덱으로 다운로드**. 숫자가 없는 순수 범주형도 빈도 집계로 시각화 | `lib/analyze`(profile·insights·transform·insightScore), `components/canvas/InsightGallery`, `lib/export/pptx` |
 | ① | **스마트 파싱 + 실시간 편집기** — 헤더 행/영역을 직접 지정(행↔열 전환 포함), 셀 수정 시 즉시 재렌더링 | `lib/excel`, `components/import`, `components/editor/DataGrid` |
 | ② | **컬럼 블록 드래그 앤 드롭** — 분류/값 축에 던지면 시각화 자동 구성, 막대+꺾은선 혼합 지원 | `components/data/ColumnBlock`, `components/canvas/AxisZone` |
 | ③ | **다양한 시각화 선택** — 막대·꺾은선·영역·누적막대·원형·도넛·산점도·방사형 + **표** + **핵심지표(KPI) 카드** | `lib/chart/registry`, `lib/chart/*Model`, `components/canvas/VizPicker` |
