@@ -101,6 +101,38 @@ export interface Snapshot {
   chart: ChartConfig;
 }
 
+/** Why an auto-generated insight is interesting (drives ranking & diversity). */
+export type InsightKind =
+  | 'distribution' // top-N category counts
+  | 'crossRollup' // melted multi-column shared-vocabulary distribution
+  | 'breakdown' // numeric sum/avg by category
+  | 'trend' // measure over time
+  | 'correlation' // measure × measure scatter
+  | 'composition' // category × subcategory, stacked
+  | 'kpi' // summary cards
+  | 'ranking'; // ranked table
+
+/**
+ * A self-contained, ready-to-render finding produced by the analysis engine.
+ *
+ * `table` + `chart` form a complete unit the existing VizRenderer/exportToPptx
+ * consume unchanged. CRITICAL invariant: `chart.xColumnId` and
+ * `chart.series[].columnId` reference column ids **inside `table`** (which may be
+ * a derived/melted table), never the source dataset.
+ */
+export interface Insight {
+  id: string;
+  kind: InsightKind;
+  /** Short headline, e.g. "유형별 분포". */
+  title: string;
+  /** Quantified finding sentence, e.g. "상위 3개 유형이 전체의 62%". */
+  caption: string;
+  /** Ranking score; higher surfaces first. */
+  score: number;
+  table: DataTable;
+  chart: ChartConfig;
+}
+
 /** Raw matrix read straight from an uploaded sheet, before structuring. */
 export interface SheetMatrix {
   sheetName: string;
