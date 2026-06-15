@@ -1,5 +1,5 @@
 import type PptxGenJS from 'pptxgenjs';
-import type { DataTable, ChartConfig, Theme } from '@/types';
+import type { DataTable, ChartConfig, Theme, Insight } from '@/types';
 import { buildPlotData, type PlotData } from '@/lib/chart/plotData';
 import { buildReportTable } from '@/lib/chart/tableModel';
 import { buildKpis } from '@/lib/chart/kpiModel';
@@ -33,7 +33,48 @@ export async function exportToPptx(
   pptx.defineLayout({ name: 'WIDE', width: 13.33, height: 7.5 });
   pptx.layout = 'WIDE';
 
-  const slide = pptx.addSlide();
+  renderSlide(pptx, pptx.addSlide(), table, chart, theme);
+
+  await pptx.writeFile({ fileName });
+}
+
+/**
+ * Multi-slide deck export: one slide per insight, each captioned with its
+ * quantified finding. Reuses the exact per-slide rendering of single export.
+ */
+export async function exportDeckToPptx(
+  items: Insight[],
+  theme: Theme,
+  fileName = 'chart-builder-pro-deck.pptx',
+): Promise<void> {
+  if (items.length === 0) return;
+
+  // Loaded on demand: the ~385 kB pptxgenjs bundle only arrives on export.
+  const { default: PptxGenJSCtor } = await import('pptxgenjs');
+  const pptx = new PptxGenJSCtor();
+  pptx.defineLayout({ name: 'WIDE', width: 13.33, height: 7.5 });
+  pptx.layout = 'WIDE';
+
+  for (const item of items) {
+    renderSlide(pptx, pptx.addSlide(), item.table, item.chart, theme, item.caption);
+  }
+
+  await pptx.writeFile({ fileName });
+}
+
+/**
+ * Render one visualization onto a slide: builds the palette + chart frame, then
+ * dispatches to a native table / KPI cards / chart by the viz's render kind. An
+ * optional `caption` adds a subtle subtitle below the content area.
+ */
+function renderSlide(
+  pptx: PptxGenJS,
+  slide: PptxGenJS.Slide,
+  table: DataTable,
+  chart: ChartConfig,
+  theme: Theme,
+  caption?: string,
+): void {
   const palette = theme.colors.length > 0 ? theme.colors : ['#2563eb'];
 
   const common: PptxGenJS.IChartOpts = {
@@ -108,7 +149,14 @@ export async function exportToPptx(
     addChart(pptx, slide, buildPlotData(table, chart), chart, palette, common);
   }
 
-  await pptx.writeFile({ fileName });
+  if (caption) {
+    slide.addText(caption, {
+      x: 0.5, y: 7.0, w: 12.3, h: 0.35,
+      fontSize: 11,
+      color: '6B7280',
+      italic: true,
+    });
+  }
 }
 
 /** Big heading text for the non-chart (table / KPI) slides. */
