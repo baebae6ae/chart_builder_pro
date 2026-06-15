@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import type { CellValue, ChartConfig, DataTable, MeasureAgg, SeriesType, VizType } from '@/types';
 import { inferColumnType, isNumeric } from '@/lib/util/infer';
-import { suggestCharts, type Suggestion } from '@/lib/analyze/suggest';
+import type { Insight } from '@/types';
+import { generateInsights } from '@/lib/analyze/insights';
 
 /**
  * The live working document: the current dataset, the visualization bound to
@@ -22,15 +23,20 @@ const emptyChart: ChartConfig = {
 interface DocumentState {
   table: DataTable | null;
   chart: ChartConfig;
-  /** Visualizations auto-suggested for the current table. */
-  suggestions: Suggestion[];
+  /** Insightful visualizations auto-generated for the current table. */
+  insights: Insight[];
+  /** Ids of insights the user picked for compare / deck export. */
+  selectedInsightIds: string[];
 
-  /** Replace the dataset (e.g. after the import wizard) and re-profile it. */
+  /** Replace the dataset (e.g. after the import wizard) and re-analyze it. */
   setTable: (table: DataTable) => void;
   /** Load a snapshot's table + chart as the new working document. */
   loadDocument: (table: DataTable, chart: ChartConfig) => void;
-  /** Apply an auto-suggested visualization to the current table. */
-  applySuggestion: (chart: ChartConfig) => void;
+  /** Open an auto-generated insight in the editor (its own table + chart). */
+  applyInsight: (insight: Insight) => void;
+  /** Toggle an insight in the multi-select used for compare / export. */
+  toggleInsightSelected: (id: string) => void;
+  clearInsightSelection: () => void;
   clear: () => void;
 
   /** Edit a single grid cell; numeric columns coerce to numbers. */
@@ -61,14 +67,24 @@ const recomputeType = (table: DataTable, colIndex: number): DataTable => {
 export const useDocumentStore = create<DocumentState>((set) => ({
   table: null,
   chart: emptyChart,
-  suggestions: [],
+  insights: [],
+  selectedInsightIds: [],
 
   setTable: (table) =>
-    set({ table, chart: emptyChart, suggestions: suggestCharts(table) }),
+    set({ table, chart: emptyChart, insights: generateInsights(table), selectedInsightIds: [] }),
   loadDocument: (table, chart) =>
-    set({ table, chart, suggestions: suggestCharts(table) }),
-  applySuggestion: (chart) => set({ chart }),
-  clear: () => set({ table: null, chart: emptyChart, suggestions: [] }),
+    set({ table, chart, insights: generateInsights(table), selectedInsightIds: [] }),
+  // Make the insight's own (possibly derived) table+chart the working document;
+  // keep the insight list intact so the user can return to the gallery.
+  applyInsight: (insight) => set({ table: insight.table, chart: insight.chart }),
+  toggleInsightSelected: (id) =>
+    set((state) => ({
+      selectedInsightIds: state.selectedInsightIds.includes(id)
+        ? state.selectedInsightIds.filter((x) => x !== id)
+        : [...state.selectedInsightIds, id],
+    })),
+  clearInsightSelection: () => set({ selectedInsightIds: [] }),
+  clear: () => set({ table: null, chart: emptyChart, insights: [], selectedInsightIds: [] }),
 
   updateCell: (rowIndex, colIndex, raw) =>
     set((state) => {

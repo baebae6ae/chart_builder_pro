@@ -822,3 +822,49 @@ select:focus {
   padding: 12px;
   font-size: 12px;
 }
+
+/* ---- Insight gallery bar / selection / compare ------------------------- */
+.gallery-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  padding: 2px;
+}
+.suggest-card__titlerow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.suggest-card--selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pick input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+}
+.insight-compare {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  padding: 2px;
+}
+.insight-compare .compare-pane {
+  min-height: 320px;
+}

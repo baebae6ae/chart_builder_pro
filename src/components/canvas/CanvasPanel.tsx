@@ -7,7 +7,7 @@ import type { DataTable } from '@/types';
 import VizRenderer from '@/components/common/VizRenderer';
 import AxisZone from './AxisZone';
 import VizPicker from './VizPicker';
-import SuggestionGallery from './SuggestionGallery';
+import InsightGallery from './InsightGallery';
 
 type Mode = 'suggest' | 'edit';
 
@@ -19,7 +19,7 @@ type Mode = 'suggest' | 'edit';
 export default function CanvasPanel() {
   const table = useDocumentStore((s) => s.table);
   const chart = useDocumentStore((s) => s.chart);
-  const suggestions = useDocumentStore((s) => s.suggestions);
+  const insights = useDocumentStore((s) => s.insights);
   const setTitle = useDocumentStore((s) => s.setTitle);
   const setAggregate = useDocumentStore((s) => s.setAggregate);
   const theme = useThemeStore((s) => s.theme);
@@ -27,14 +27,14 @@ export default function CanvasPanel() {
   const [mode, setMode] = useState<Mode>('edit');
   const [exporting, setExporting] = useState(false);
 
-  // Reset to the suggestion gallery whenever a new dataset is loaded.
+  // Reset to the insight gallery whenever a new dataset is loaded.
   const lastTable = useRef<DataTable | null>(null);
   useEffect(() => {
     if (table && table !== lastTable.current) {
       lastTable.current = table;
-      setMode(suggestions.length > 0 ? 'suggest' : 'edit');
+      setMode(insights.length > 0 ? 'suggest' : 'edit');
     }
-  }, [table, suggestions]);
+  }, [table, insights]);
 
   const ready = Boolean(table && isVizApplicable(chart.viz, chart));
 
@@ -68,7 +68,7 @@ export default function CanvasPanel() {
           className={`editor-tab${mode === 'suggest' ? ' editor-tab--active' : ''}`}
           onClick={() => setMode('suggest')}
         >
-          추천 시각화{suggestions.length > 0 ? ` (${suggestions.length})` : ''}
+          추천 시각화{insights.length > 0 ? ` (${insights.length})` : ''}
         </button>
         <button
           className={`editor-tab${mode === 'edit' ? ' editor-tab--active' : ''}`}
@@ -79,7 +79,7 @@ export default function CanvasPanel() {
       </div>
 
       {mode === 'suggest' ? (
-        <SuggestionGallery onPick={() => setMode('edit')} />
+        <InsightGallery onOpen={() => setMode('edit')} />
       ) : (
         <>
           <div className="axes">
