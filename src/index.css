@@ -344,8 +344,34 @@ select:focus {
 .editor-body {
   flex: 1;
   min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Virtualized grid owns its own scroll container so row windowing can measure
+   the viewport precisely. */
+.grid-wrap {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.grid-scroll {
+  flex: 1;
+  min-height: 0;
   overflow: auto;
   padding: 10px 12px;
+}
+.grid-foot {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+}
+.grid__spacer td {
+  padding: 0;
+  border: 0;
 }
 
 .grid {
@@ -439,6 +465,7 @@ select:focus {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   height: 100%;
+  padding: 10px 12px;
 }
 .compare-pane {
   border: 1px solid var(--border);
@@ -793,12 +820,32 @@ select:focus {
   background: var(--surface);
   overflow: hidden;
 }
-.suggest-card__cta {
-  padding: 8px 12px;
+.suggest-card__foot {
+  display: flex;
+  border-top: 1px solid var(--border);
+}
+.suggest-card__act {
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  padding: 9px 10px;
   font-size: 12px;
   font-weight: 700;
+  background: var(--surface);
+  color: var(--text);
+}
+.suggest-card__act:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+.suggest-card__act + .suggest-card__act {
+  border-left: 1px solid var(--border);
+}
+.suggest-card__act--primary {
   color: var(--accent);
   background: var(--accent-soft);
+}
+.suggest-card__act--primary:hover:not(:disabled) {
+  background: #dbe7ff;
 }
 /* Compact the shared views when shown inside a small preview card. */
 .suggest-card__preview .chart-host {

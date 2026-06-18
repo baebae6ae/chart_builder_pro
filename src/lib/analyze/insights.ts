@@ -25,6 +25,7 @@ import {
   pivotCount,
   topNWithOther,
 } from '@/lib/analyze/transform';
+import { describeTrend, describeCorrelation } from '@/lib/analyze/narrate';
 
 /**
  * Insight-generation engine. Profiles the table once, runs a set of independent
@@ -292,10 +293,11 @@ function ruleTrend(ctx: Ctx): Insight[] {
     aggregate: true,
   });
 
-  const dir = last >= first ? '증가' : '감소';
-  const caption = `${measureName}이(가) ${formatCompact(first)} 대비 ${formatCompact(
-    last,
-  )} ${pct(Math.abs(delta))} ${dir}`;
+  const caption = describeTrend({
+    measureName,
+    labels: order,
+    values: order.map((k) => map.get(k) ?? 0),
+  });
   const score = 60 + 20 * Math.abs(slopeNorm) + coverage(date, ctx.rowCount);
   out.push(
     makeInsight('trend', `${date.name}별 ${measureName} 추세`, caption, score, ctx.table, chart),
@@ -334,8 +336,6 @@ function ruleCorrelation(ctx: Ctx): Insight[] {
 
   if (!best || Math.abs(best.r) < 0.3) return [];
 
-  const strength = Math.abs(best.r) >= 0.7 ? '강한' : Math.abs(best.r) >= 0.5 ? '중간' : '약한';
-  const sign = best.r >= 0 ? '양' : '음';
   const chart = makeChart({
     title: `${best.a.name} × ${best.b.name} 상관`,
     viz: 'scatter',
@@ -343,9 +343,7 @@ function ruleCorrelation(ctx: Ctx): Insight[] {
     series: [series(best.a.columnId, 'line', 'sum'), series(best.b.columnId, 'line', 'sum')],
     aggregate: false,
   });
-  const caption = `${best.a.name}와 ${best.b.name}는 ${strength} ${sign}의 상관 (r=${formatNumber(
-    best.r,
-  )})`;
+  const caption = describeCorrelation(best.a.name, best.b.name, best.r, best.n);
   const score = 50 + 45 * Math.abs(best.r);
   return [
     makeInsight(

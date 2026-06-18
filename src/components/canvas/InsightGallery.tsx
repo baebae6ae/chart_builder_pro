@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useDocumentStore } from '@/store/documentStore';
 import { useThemeStore } from '@/store/themeStore';
-import { exportDeckToPptx } from '@/lib/export/pptx';
+import { exportDeckToPptx, exportToPptx } from '@/lib/export/pptx';
+import type { Insight } from '@/types';
 import VizRenderer from '@/components/common/VizRenderer';
 
 /**
@@ -21,7 +22,17 @@ export default function InsightGallery({ onOpen }: { onOpen: () => void }) {
   const theme = useThemeStore((s) => s.theme);
 
   const [exporting, setExporting] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [compare, setCompare] = useState(false);
+
+  const downloadOne = async (ins: Insight) => {
+    setBusyId(ins.id);
+    try {
+      await exportToPptx(ins.table, ins.chart, theme, `${ins.title || 'insight'}.pptx`);
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   if (!table) return null;
 
@@ -102,15 +113,25 @@ export default function InsightGallery({ onOpen }: { onOpen: () => void }) {
                 <div className="suggest-card__preview">
                   <VizRenderer table={ins.table} chart={ins.chart} theme={theme} />
                 </div>
-                <button
-                  className="suggest-card__cta"
-                  onClick={() => {
-                    applyInsight(ins);
-                    onOpen();
-                  }}
-                >
-                  편집에서 열기 →
-                </button>
+                <div className="suggest-card__foot">
+                  <button
+                    className="suggest-card__act"
+                    disabled={busyId === ins.id}
+                    title="이 시각화 한 장만 PPT로 저장"
+                    onClick={() => downloadOne(ins)}
+                  >
+                    {busyId === ins.id ? '생성 중…' : '⬇ 이 슬라이드'}
+                  </button>
+                  <button
+                    className="suggest-card__act suggest-card__act--primary"
+                    onClick={() => {
+                      applyInsight(ins);
+                      onOpen();
+                    }}
+                  >
+                    편집에서 열기 →
+                  </button>
+                </div>
               </div>
             );
           })}
